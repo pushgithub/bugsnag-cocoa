@@ -179,6 +179,7 @@ steps:
         download: ["features/fixtures/macos/output/macOSTestApp.zip"]
     commands:
       - bundle install
+      - date "+%Y-%m-%d %H:%M:%S" > .e2e_start
       - bundle exec maze-runner
         features/barebone_tests.feature
         --farm=local
@@ -187,6 +188,11 @@ steps:
         --app=macOSTestApp
         --tags='not @skip_macos'
         --fail-fast
+      - sudo log collect --output system_logs.logarchive --start "$(cat .e2e_start)"
+      - zip --quiet -r system_logs.logarchive.zip system_logs.logarchive
+      - rm -rf system_logs.logarchive
+    artifact_paths:
+      system_logs.logarchive.zip
 
   - label: 'Conditionally trigger full set of tests'
     command: sh -c .buildkite/pipeline_trigger.sh
